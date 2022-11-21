@@ -13,6 +13,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: FormuleRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read']],
+    
     denormalizationContext: ['groups' => ['write']],
 )]
 class Formule
