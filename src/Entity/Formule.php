@@ -2,34 +2,45 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Repository\FormuleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiResource;
+use App\Repository\FormuleRepository;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: FormuleRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['read']],
+    
+    denormalizationContext: ['groups' => ['write']],
+)]
 class Formule
 {
+    #[Groups(['read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column(length: 255)]
     private ?string $libelle = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?float $prix1 = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?float $prix2 = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $details = null;
 
+    #[Groups('read')]
     #[ORM\OneToMany(mappedBy: 'formule', targetEntity: Abonnement::class)]
     private Collection $abonnements;
 
