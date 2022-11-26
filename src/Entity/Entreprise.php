@@ -32,9 +32,18 @@ class Entreprise
     #[ORM\Column(length: 255)]
     private ?string $slug = null;
 
+    #[ORM\ManyToOne(inversedBy: 'entreprises')]
+    private ?Referent $referent = null;
+
+    #[ORM\OneToMany(mappedBy: 'entreprise', targetEntity: Inscription::class)]
+    private Collection $inscriptions;
+
+
+
     public function __construct()
     {
         $this->abonnementPackages = new ArrayCollection();
+        $this->inscriptions = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -119,4 +128,47 @@ class Entreprise
 
         return $this;
     }
+
+    public function getReferent(): ?Referent
+    {
+        return $this->referent;
+    }
+
+    public function setReferent(?Referent $referent): self
+    {
+        $this->referent = $referent;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Inscription>
+     */
+    public function getInscriptions(): Collection
+    {
+        return $this->inscriptions;
+    }
+
+    public function addInscription(Inscription $inscription): self
+    {
+        if (!$this->inscriptions->contains($inscription)) {
+            $this->inscriptions->add($inscription);
+            $inscription->setEntreprise($this);
+        }
+
+        return $this;
+    }
+
+    public function removeInscription(Inscription $inscription): self
+    {
+        if ($this->inscriptions->removeElement($inscription)) {
+            // set the owning side to null (unless already changed)
+            if ($inscription->getEntreprise() === $this) {
+                $inscription->setEntreprise(null);
+            }
+        }
+
+        return $this;
+    }
+
 }

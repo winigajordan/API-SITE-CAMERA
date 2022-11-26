@@ -5,28 +5,38 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AbonnementInscriptionRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AbonnementInscriptionRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']],
+)]
 class AbonnementInscription
 {
+    #[Groups(['read'])]
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?float $prix = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?float $frais = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?int $nbrNiveau = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?int $nbrCamera = null;
 
+    #[Groups(['read'])]
     #[ORM\OneToOne(inversedBy: 'abonnementInscription', cascade: ['persist', 'remove'])]
     private ?Inscription $inscription = null;
 

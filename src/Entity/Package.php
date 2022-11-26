@@ -8,27 +8,40 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PackageRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    normalizationContext: ['groups' => ['read']],
+    denormalizationContext: ['groups' => ['write']],
+)]
 class Package
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column(length: 255)]
     private ?string $libelle = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column(type: Types::TEXT)]
     private ?string $details = null;
 
+    #[Groups(['read', 'write'])]
     #[ORM\Column]
     private ?float $prix = null;
 
+    #[Groups(['read'])]
     #[ORM\OneToMany(mappedBy: 'package', targetEntity: AbonnementPackage::class)]
     private Collection $abonnementPackages;
+
+    #[Groups(['read', 'write'])]
+    #[ORM\Column]
+    private ?bool $etat = null;
 
     public function __construct()
     {
@@ -102,6 +115,18 @@ class Package
                 $abonnementPackage->setPackage(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isEtat(): ?bool
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(bool $etat): self
+    {
+        $this->etat = $etat;
 
         return $this;
     }

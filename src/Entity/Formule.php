@@ -13,7 +13,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 #[ORM\Entity(repositoryClass: FormuleRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['read']],
-    
     denormalizationContext: ['groups' => ['write']],
 )]
 class Formule
@@ -43,6 +42,10 @@ class Formule
     #[Groups('read')]
     #[ORM\OneToMany(mappedBy: 'formule', targetEntity: Abonnement::class)]
     private Collection $abonnements;
+
+    #[Groups(['read', 'write'])]
+    #[ORM\Column]
+    private ?bool $etat = null;
 
     public function __construct()
     {
@@ -128,6 +131,18 @@ class Formule
                 $abonnement->setFormule(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isEtat(): ?bool
+    {
+        return $this->etat;
+    }
+
+    public function setEtat(bool $etat): self
+    {
+        $this->etat = $etat;
 
         return $this;
     }
