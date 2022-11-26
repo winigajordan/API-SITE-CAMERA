@@ -6,11 +6,13 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\InscriptionRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: InscriptionRepository::class)]
 #[ApiResource]
 class Inscription
 {
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -19,14 +21,18 @@ class Inscription
     #[ORM\Column(nullable: true)]
     private ?bool $etatInscription = null;
 
+
     #[ORM\Column(length: 255)]
     private ?string $nom = null;
+
 
     #[ORM\Column(length: 255)]
     private ?string $prenom = null;
 
+
     #[ORM\Column(length: 255)]
     private ?string $mail = null;
+
 
     #[ORM\Column(length: 255)]
     private ?string $login = null;
@@ -34,20 +40,28 @@ class Inscription
     #[ORM\Column(type: Types::TEXT)]
     private ?string $password = null;
 
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $telephone = null;
+
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $region = null;
 
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $pays = null;
+
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $adresse = null;
 
+
     #[ORM\OneToOne(mappedBy: 'inscription', cascade: ['persist', 'remove'])]
     private ?AbonnementInscription $abonnementInscription = null;
+
+    #[ORM\ManyToOne(inversedBy: 'inscriptions')]
+    private ?Entreprise $entreprise = null;
 
     public function getId(): ?int
     {
@@ -192,6 +206,18 @@ class Inscription
         }
 
         $this->abonnementInscription = $abonnementInscription;
+
+        return $this;
+    }
+
+    public function getEntreprise(): ?Entreprise
+    {
+        return $this->entreprise;
+    }
+
+    public function setEntreprise(?Entreprise $entreprise): self
+    {
+        $this->entreprise = $entreprise;
 
         return $this;
     }
