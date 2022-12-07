@@ -69,7 +69,11 @@ class UserController extends AbstractController
             ->setPays($data->get('pays'))
             ->setAdresse($data->get('adresse'));
 
-            if ($data->get('referent_id')) $client->setReferent($this->referentRepository->find($data->get('referent_id')));
+            if ($data->get('referent_id')) {
+                
+                $client->setReferent($this->referentRepository->find($data->get('referent_id')));
+            }
+                
             $this->manager->persist($client);
             $this->manager->flush();
             $table = [

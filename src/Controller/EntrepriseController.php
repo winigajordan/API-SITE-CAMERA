@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Entreprise;
+use App\Repository\EntrepriseRepository;
 use App\Repository\ReferentRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,13 +16,16 @@ class EntrepriseController extends AbstractController
 
     private ReferentRepository $referentRepository;
     private EntityManagerInterface $manager;
+    private EntrepriseRepository $entrepriseRepository;
     public function __construct(
         ReferentRepository $referentRepository,
-        EntityManagerInterface $manager
+        EntityManagerInterface $manager,
+        EntrepriseRepository $entrepriseRepository,
     )
     {
         $this->referentRepository=$referentRepository;
         $this->manager = $manager;
+        $this->entrepriseRepository=$entrepriseRepository;
     }
 
     #[Route('/add', name: 'add_entreprise', methods: 'POST')]
@@ -42,5 +46,11 @@ class EntrepriseController extends AbstractController
         } catch (\Exception $exception) {
             return $this->json($exception, 500);
         }
+    }
+
+    #[Route('/show/{id}', name: 'entreprise_show')]
+    public function showEntreprise($id): JsonResponse
+    {
+        return $this->json($this->entrepriseRepository->find($id));
     }
 }

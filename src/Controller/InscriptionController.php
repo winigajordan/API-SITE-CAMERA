@@ -2,19 +2,21 @@
 
 namespace App\Controller;
 
-use App\Entity\AbonnementInscription;
-use App\Entity\Inscription;
-use App\Repository\AbonnementInscriptionRepository;
-use App\Repository\EntrepriseRepository;
-use App\Repository\FormuleRepository;
-use App\Repository\InscriptionRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Query\Expr\Func;
+use App\Entity\Abonnement;
 use Exception;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\Client;
+use App\Entity\Inscription;
+use Doctrine\ORM\Query\Expr\Func;
+use App\Entity\AbonnementInscription;
+use App\Repository\FormuleRepository;
+use App\Repository\EntrepriseRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Repository\InscriptionRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Repository\AbonnementInscriptionRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 #[Route('/api/perso/inscriptions')]
 class InscriptionController extends AbstractController
@@ -60,6 +62,7 @@ class InscriptionController extends AbstractController
                 if ($data->get('entreprise_id')!=0) {
                     $inscription->setEntreprise($this->entrepriseRepository->find($data->get('entreprise_id')));
                 }
+            
             $this->manager->persist($inscription);
             $this->manager->flush();
             return $this->json($inscription, 200);
@@ -96,6 +99,7 @@ class InscriptionController extends AbstractController
         $table = [];
         foreach($inscriptions as $inscription){
             $table[] = [
+                'id'=>$inscription->getId(),
                 'nom'=>$inscription->getNom(),
                 'prenom'=>$inscription->getPrenom(),
                 'mail'=>$inscription->getMail(),
@@ -121,8 +125,53 @@ class InscriptionController extends AbstractController
         catch (\Exception $exception){
             return $this->json($exception, 500);
         }
-        
     }
 
+    #[Route('/validation', methods: 'POST')]
+    public function validation(Request $request) : JsonResponse
+    {
+        $inscription = $this->inscriptionRepository->find($request->request->get('inscription_id'));
+        if ($request->request->get('validation')!=0){
+
+            $client = new Client();
+            $client ->setNom($inscription->getNom())
+            ->setPrenom($inscription->getPrenom())
+                ->setPays($inscription->getPrenom())
+                ->setMail($inscription->getMail())
+                ->setLogin($inscription->getLogin())
+                ->setPassword($inscription->getPassword())
+                ->setTelephone($inscription->getTelephone())
+                ->setRegion($inscription->getRegion())
+                ->setPays($inscription->getPays())
+                ->setAdresse($inscription->getAdresse());
+            
+            if ($inscription->getEntreprise()!=null) {
+                    $client->setReferent($inscription->getEntreprise()->getReferent());
+            }
+            
+            $this->manager->persist($client);
+
+            $abonnementInscription = $inscription->getAbonnementInscription();
+            $abonnement = new Abonnement();
+            $abonnement->setPrix($abonnementInscription->getPrix())
+            ->setFrais($abonnementInscription->getFrais())
+            ->setNbrNiveau($abonnementInscription->getNbrNiveau())
+            ->setNbrCamera($abonnementInscription->getNbrCamera())
+            ->setFormule($abonnementInscription->getFormule())
+            ->setUser($client)
+            ->setEtatAbonnement("ATTENTE DE PAYEMENT")
+            ->setEtatFrais(false)
+            ->setSlug(uniqid('abnm-'));
+            $this->manager->persist($abonnement);
+        }
+        
+        $inscription->setEtatInscription(true);
+        $this->manager->persist($inscription);
+        $this->manager->flush();
+
+        return $this->json($abonnement);
+    }
+
+    
     
 } 
