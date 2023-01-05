@@ -25,6 +25,9 @@ class ReglementPackage
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $endAt = null;
 
+    #[ORM\ManyToOne(inversedBy: 'reglementPackages')]
+    private ?AbonnementPackage $abonnement = null;
+
     
 
     public function getId(): ?int
@@ -64,6 +67,18 @@ class ReglementPackage
     public function setEndAt(\DateTimeInterface $endAt): self
     {
         $this->endAt = $endAt;
+
+        return $this;
+    }
+
+    public function getAbonnement(): ?AbonnementPackage
+    {
+        return $this->abonnement;
+    }
+
+    public function setAbonnement(?AbonnementPackage $abonnement): self
+    {
+        $this->abonnement = $abonnement;
 
         return $this;
     }

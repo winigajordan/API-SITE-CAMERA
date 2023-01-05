@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\AbonnementPackageRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AbonnementPackageRepository::class)]
@@ -23,6 +25,14 @@ class AbonnementPackage
 
     #[ORM\ManyToOne(inversedBy: 'abonnementPackages')]
     private ?Entreprise $entreprise = null;
+
+    #[ORM\OneToMany(mappedBy: 'abonnement', targetEntity: ReglementPackage::class)]
+    private Collection $reglementPackages;
+
+    public function __construct()
+    {
+        $this->reglementPackages = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -61,6 +71,36 @@ class AbonnementPackage
     public function setEntreprise(?Entreprise $entreprise): self
     {
         $this->entreprise = $entreprise;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ReglementPackage>
+     */
+    public function getReglementPackages(): Collection
+    {
+        return $this->reglementPackages;
+    }
+
+    public function addReglementPackage(ReglementPackage $reglementPackage): self
+    {
+        if (!$this->reglementPackages->contains($reglementPackage)) {
+            $this->reglementPackages->add($reglementPackage);
+            $reglementPackage->setAbonnement($this);
+        }
+
+        return $this;
+    }
+
+    public function removeReglementPackage(ReglementPackage $reglementPackage): self
+    {
+        if ($this->reglementPackages->removeElement($reglementPackage)) {
+            // set the owning side to null (unless already changed)
+            if ($reglementPackage->getAbonnement() === $this) {
+                $reglementPackage->setAbonnement(null);
+            }
+        }
 
         return $this;
     }
