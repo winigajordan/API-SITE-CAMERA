@@ -53,4 +53,19 @@ class EntrepriseController extends AbstractController
     {
         return $this->json($this->entrepriseRepository->find($id));
     }
+
+    #[Route('/update', name: 'entreprise_update')]
+    public function updateEntreprise(Request $request): JsonResponse
+    {
+        $data=$request->request;
+        $entreprise = $this->entrepriseRepository->find($data->get('id'));
+        $entreprise->setLibelle($data->get('libelle'));
+        $entreprise->setRccm($data->get('rccm'));
+        $entreprise->setNinea($data->get('ninea'));
+        $this->manager->persist($entreprise);
+        $this->manager->flush();
+        return $this->json($entreprise);
+    }
+
+
 }
