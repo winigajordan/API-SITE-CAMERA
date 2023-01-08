@@ -34,7 +34,7 @@ class EntrepriseController extends AbstractController
         try {
             $data = $request->request;
             $entreprise = (new Entreprise())
-                ->setReferent($this->referentRepository->find($data->get('referent_id')))
+                ->setReferent($this->referentRepository->find($data->get('referent-id')))
                 ->setSlug(uniqid('etreprise-'))
                 ->setLibelle($data->get('libelle'))
                 ->setNinea($data->get('ninea'))

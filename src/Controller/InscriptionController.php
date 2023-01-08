@@ -42,6 +42,38 @@ class InscriptionController extends AbstractController
 
     }
 
+    #[Route('/abonnements', name: 'add_inscription', methods: 'POST')]
+    public function addAbonnementInscription(Request $request): JsonResponse
+    {
+        try {
+            $data = $request->request;
+            $abonnement = (new AbonnementInscription())
+                ->setPrix($data->get('prix'))
+                ->setFrais($data->get('frais'))
+                ->setNbrNiveau($data->get('nbr-niveau'))
+                ->setNbrCamera($data->get('nbr-camera'))
+                ->setFormule($this->formuleRepository->find($data->get('formule-id')));
+            $this->manager->persist($abonnement);
+            $this->manager->flush();
+            return $this->json($abonnement);
+        } catch (\Exception $exception){
+            return $this->json($exception, 500);
+        }
+    }
+
+
+    #[Route('/abonnement/{id}', name:'get_abonnement_inscription', methods:'GET')]
+    public function getAbonnementInscription($id) : JsonResponse
+    {
+        try {
+            $abonnement = $this->abonnementInscription->find($id);
+            return $this->json($abonnement, 200);
+        }
+        catch (\Exception $exception){
+            return $this->json($exception, 500);
+        }
+    }
+
     #[Route('', name: 'app_inscription', methods: 'POST')]
     public function addInscription(Request $request): JsonResponse
     {
@@ -58,9 +90,9 @@ class InscriptionController extends AbstractController
                 ->setRegion($data->get('region'))
                 ->setPays($data->get('pays'))
                 ->setAdresse($data->get('adresse'))
-                ->setAbonnementInscription($this->abonnementInscription->find($data->get('abonnementInsciption')));
-                if ($data->get('entreprise_id')!=0) {
-                    $inscription->setEntreprise($this->entrepriseRepository->find($data->get('entreprise_id')));
+                ->setAbonnementInscription($this->abonnementInscription->find($data->get('abonnement-insciption')));
+                if ($data->get('entreprise-id')) {
+                    $inscription->setEntreprise($this->entrepriseRepository->find($data->get('entreprise-id')));
                 }
             
             $this->manager->persist($inscription);
@@ -72,30 +104,15 @@ class InscriptionController extends AbstractController
 
     }
 
-    #[Route('/abonnements', name: 'add_inscription', methods: 'POST')]
-    public function addAbonnementInscription(Request $request): JsonResponse
+    #[Route('/list/{id}', name:'get_inscriptions', methods: 'GET', defaults:['id'=>0])]
+    public function getInscriptions($id): JsonResponse
     {
-        try {
-            $data = $request->request;
-            $abonnement = (new AbonnementInscription())
-                ->setPrix($data->get('prix'))
-                ->setFrais($data->get('frais'))
-                ->setNbrNiveau($data->get('nbrNiveau'))
-                ->setNbrCamera($data->get('nbrCamera'))
-                ->setFormule($this->formuleRepository->find($data->get('formule_id')));
-            $this->manager->persist($abonnement);
-            $this->manager->flush();
-            return $this->json($abonnement);
-        } catch (\Exception $exception){
-            return $this->json($exception, 500);
+        $inscriptions = null;
+        if ($id!=0){
+            $inscriptions = $this->inscriptionRepository->findBy(['entreprise'=>$this->entrepriseRepository->find($id), 'etatInscription'=>false]);
+        } else {
+            $inscriptions = $this->inscriptionRepository->findBy(['entreprise'=>null, 'etatInscription'=>false]);
         }
-    }
-
-    #[Route('/list/{entreprise_id}', name:'get_inscriptions', methods: 'GET', defaults:['entreprise_id'=>0])]
-    public function getInscriptions($entreprise_id): JsonResponse
-    {
-        //return $this->json($entreprise_id);
-        $inscriptions = $this->inscriptionRepository->findBy(['entreprise'=>$this->entrepriseRepository->find($entreprise_id), 'etatInscription'=>false]);
         $table = [];
         foreach($inscriptions as $inscription){
             $table[] = [
@@ -115,14 +132,12 @@ class InscriptionController extends AbstractController
         return $this->json($table);
     }
 
-    #[Route('/abonnement/{id}', name:'get_abonnement_inscription', methods:'GET')]
-    public function getAbonnementInscription($id) : JsonResponse
+    #[Route('/{id}', name: 'show_inscription', methods: 'GET')]
+    public function showInscription($id): JsonResponse
     {
         try {
-            $abonnement = $this->abonnementInscription->find($id);
-            return $this->json($abonnement, 200);
-        }
-        catch (\Exception $exception){
+            return $this->json($this->inscriptionRepository->find($id));
+        } catch (\Exception $exception){
             return $this->json($exception, 500);
         }
     }
@@ -130,47 +145,56 @@ class InscriptionController extends AbstractController
     #[Route('/validation', methods: 'POST')]
     public function validation(Request $request) : JsonResponse
     {
-        $inscription = $this->inscriptionRepository->find($request->request->get('inscription_id'));
-        if ($request->request->get('validation')!=0){
+        $inscription = $this->inscriptionRepository->find($request->request->get('inscription-id'));
+        try {
+            if ($request->request->get('validation')!=0){
 
-            $client = new Client();
-            $client ->setNom($inscription->getNom())
-            ->setPrenom($inscription->getPrenom())
-                ->setPays($inscription->getPrenom())
-                ->setMail($inscription->getMail())
-                ->setLogin($inscription->getLogin())
-                ->setPassword($inscription->getPassword())
-                ->setTelephone($inscription->getTelephone())
-                ->setRegion($inscription->getRegion())
-                ->setPays($inscription->getPays())
-                ->setAdresse($inscription->getAdresse());
-            
-            if ($inscription->getEntreprise()!=null) {
+                $client = new Client();
+                $client ->setNom($inscription->getNom())
+                    ->setPrenom($inscription->getPrenom())
+                    ->setPays($inscription->getPrenom())
+                    ->setMail($inscription->getMail())
+                    ->setLogin($inscription->getLogin())
+                    ->setPassword($inscription->getPassword())
+                    ->setTelephone($inscription->getTelephone())
+                    ->setRegion($inscription->getRegion())
+                    ->setPays($inscription->getPays())
+                    ->setAdresse($inscription->getAdresse());
+
+                if ($inscription->getEntreprise()!=null) {
                     $client->setReferent($inscription->getEntreprise()->getReferent());
+                }
+
+                $this->manager->persist($client);
+
+                $abonnementInscription = $inscription->getAbonnementInscription();
+                $abonnement = new Abonnement();
+                $abonnement->setPrix($abonnementInscription->getPrix())
+                    ->setFrais($abonnementInscription->getFrais())
+                    ->setNbrNiveau($abonnementInscription->getNbrNiveau())
+                    ->setNbrCamera($abonnementInscription->getNbrCamera())
+                    ->setFormule($abonnementInscription->getFormule())
+                    ->setUser($client)
+                    ->setEtatAbonnement("ATTENTE DE PAYEMENT")
+                    ->setEtatFrais(false)
+                    ->setSlug(uniqid('abnm-'));
+                $this->manager->persist($abonnement);
             }
-            
-            $this->manager->persist($client);
 
-            $abonnementInscription = $inscription->getAbonnementInscription();
-            $abonnement = new Abonnement();
-            $abonnement->setPrix($abonnementInscription->getPrix())
-            ->setFrais($abonnementInscription->getFrais())
-            ->setNbrNiveau($abonnementInscription->getNbrNiveau())
-            ->setNbrCamera($abonnementInscription->getNbrCamera())
-            ->setFormule($abonnementInscription->getFormule())
-            ->setUser($client)
-            ->setEtatAbonnement("ATTENTE DE PAYEMENT")
-            ->setEtatFrais(false)
-            ->setSlug(uniqid('abnm-'));
-            $this->manager->persist($abonnement);
+            $inscription->setEtatInscription(true);
+            $this->manager->persist($inscription);
+            $this->manager->flush();
+
+            return $this->json($abonnement);
+
+        } catch (Exception $exception){
+            return $this->json($exception);
         }
-        
-        $inscription->setEtatInscription(true);
-        $this->manager->persist($inscription);
-        $this->manager->flush();
-
-        return $this->json($abonnement);
     }
+
+
+
+
 
     
     

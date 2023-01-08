@@ -43,7 +43,7 @@ class UserController extends AbstractController
     {
         $data = $request->request;
         try {
-            $client = (new Referent())
+            $ref = (new Referent())
                 ->setNom($data->get('nom'))
                 ->setPrenom($data->get('prenom'))
                 ->setPassword($data->get('password'))
@@ -54,10 +54,10 @@ class UserController extends AbstractController
                 ->setPays($data->get('pays'))
                 ->setAdresse($data->get('adresse'));
 
-            $this->manager->persist($client);
+            $this->manager->persist($ref);
             $this->manager->flush();
             $table = [
-                'id_insere'=>$client->getId()
+                'id_insere'=>$ref->getId()
             ];
             return $this->json($table, 200);
         } catch (\Exception $exception) {
@@ -82,9 +82,9 @@ class UserController extends AbstractController
             ->setPays($data->get('pays'))
             ->setAdresse($data->get('adresse'));
 
-            if ($data->get('referent_id')) {
+            if ($data->get('referent-id')) {
 
-                $client->setReferent($this->referentRepository->find($data->get('referent_id')));
+                $client->setReferent($this->referentRepository->find($data->get('referent-id')));
             }
 
             $this->manager->persist($client);
