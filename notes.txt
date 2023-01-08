@@ -33,3 +33,4 @@ symfony serve -d (pour lancer le serveur en arrière plan)
 si vous voulez ajouter de nouvelles fonctionnalités il faut passer en mode dev
 Dans le fichier .env, on a APP_ENV=prod
 changer prod par dev, et avant de deployer, repasser en prod
+
