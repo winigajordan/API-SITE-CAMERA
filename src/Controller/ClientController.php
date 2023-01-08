@@ -54,7 +54,7 @@ class ClientController extends AbstractController
     public function clientsDigiplanit($need): JsonResponse
     {
         $table = [];
-        if ($need=="ref"){
+        if ($need=="REF"){
             $refs =  $this->referentRipo->findAll();
             foreach ($refs as $cl)
             {
