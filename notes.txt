@@ -1,0 +1,36 @@
+Prérequis :
+php : 8.1 >
+composer
+Symfony cli
+Version : 5.2.0
+
+Une fois le projet clooné ,
+
+1- Configuration de la base de donnée dans le fichier .env
+dans DATABASE_URL, remplacer root par l'utilisateur de mysql
+si il y'a un mot de passe, mettre le mot de passe juste après les deux points
+mettre à jour l'adresse ip en y insérant l'adresse mysql distant en cas d'hébergement
+mettre à jour le nom de la base de donnée
+on aura alors un format mysql://login:password@address:port/databaseName
+
+?serverVersion=8&charset=utf8mb4 est optionnel
+
+
+2- installation des dépendances et création de la base de donnée
+--- exétuter les commandes suivantes
+
+composer install (pour installer toutes les dépendances du projet)
+php bin/console doctrine:database:create (pour creer la base de donnée)
+php bin/console doctrine:schema:update --force (pour mettre à jour les tables de la base de donnée)
+
+
+3- lancer le serveur
+symfony server:start
+symfony serve
+symfony serve -d (pour lancer le serveur en arrière plan)
+
+4- Info supplémentaire
+si vous voulez ajouter de nouvelles fonctionnalités il faut passer en mode dev
+Dans le fichier .env, on a APP_ENV=prod
+changer prod par dev, et avant de deployer, repasser en prod
+
